@@ -16,7 +16,7 @@ const startupTimeLimit time.Duration = 2 * time.Second
 // Parameter timeout is how long between messages are allowed. If no message is
 // received after timeout amount of time, the process is restarted.
 // Parameter cmd is the command that should be executed after timeout duration.
-func Watchdog(port int, timeout time.Duration, cmd *exec.Cmd) {
+func Watchdog(port int, timeout time.Duration, exePath string, args []string) {
 	wdChan := make(chan string)
 	go bcast.Receiver(port, wdChan)
 
@@ -38,14 +38,18 @@ func Watchdog(port int, timeout time.Duration, cmd *exec.Cmd) {
 
 		if respawn {
 			respawn = false
-			_ = cmd
 
 			fmt.Println("Spawing process")
+			cmd := exec.Command(exePath, args...)
+
+			err := cmd.Start()
+			if err != nil {
+				panic(fmt.Sprintf("Couldn't respawn process: %#v", cmd))
+			}
 
 			// Wait a while for process to start again
 			<-time.After(startupTimeLimit)
 			wdTimer.Reset(timeout)
-
 			fmt.Println("Watchdog timer started again")
 		}
 	}
