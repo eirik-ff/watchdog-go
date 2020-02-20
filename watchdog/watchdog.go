@@ -2,6 +2,7 @@ package watchdog
 
 import (
 	"fmt"
+	"os"
 	"os/exec"
 	"time"
 
@@ -41,6 +42,9 @@ func Watchdog(port int, timeout time.Duration, exePath string, args []string) {
 
 			fmt.Println("Spawing process")
 			cmd := exec.Command(exePath, args...)
+			// TODO: figure out how to prefix output with a string
+			cmd.Stdout = os.Stdout
+			cmd.Stderr = os.Stderr
 
 			err := cmd.Start()
 			if err != nil {
