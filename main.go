@@ -11,6 +11,7 @@ import (
 
 const wdPortDefault int = 57005
 const wdTimeoutDefault = 5000 // 5 seconds
+const wdMessageDefault = "28-IAmAlive"
 
 func main() {
 	usr, _ := user.Current()
@@ -18,6 +19,8 @@ func main() {
 
 	port := flag.Int("port", wdPortDefault, "Port for communicating with the watchdog")
 	timeout := flag.Int("timeout", wdTimeoutDefault, "Timeout in milliseconds")
+	message := flag.String("message", wdMessageDefault,
+		"Message that needs to be received to be accepted as \"still alive\"")
 	exe := flag.String("exec", homeDir+"/sanntid-heis-gr28/heis",
 		strings.Join([]string{
 			"Path of the executable that will be respawned. Supports arguments if ",
@@ -30,7 +33,7 @@ func main() {
 	exePath := args[0]
 	args = args[1:]
 
-	go watchdog.Watchdog(*port, time.Duration(*timeout)*time.Millisecond, exePath, args)
+	go watchdog.Watchdog(*port, time.Duration(*timeout)*time.Millisecond, *message, exePath, args)
 
 	for {
 	}

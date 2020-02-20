@@ -13,11 +13,15 @@ const startupTimeLimit time.Duration = 2 * time.Second
 
 // Watchdog supervises a process sending on port wdPort. If no message has
 // arrived in a specified time interval, Watchdog starts the process again.
-// Parameter port is which port the watchdog will listen to.
-// Parameter timeout is how long between messages are allowed. If no message is
+//
+// * Parameter port is which port the watchdog will listen to.
+// * Parameter timeout is how long between messages are allowed. If no message is
 // received after timeout amount of time, the process is restarted.
-// Parameter cmd is the command that should be executed after timeout duration.
-func Watchdog(port int, timeout time.Duration, exePath string, args []string) {
+// * Parameter message is the message that needs to be received for the message
+// to be accepted as a "still alive" message.
+// * Parameter exePath is the path of the executable to be executed on time out.
+// * Parameter args are arguments that should be passed to the executable.
+func Watchdog(port int, timeout time.Duration, message string, exePath string, args []string) {
 	wdChan := make(chan string)
 	go bcast.Receiver(port, wdChan)
 
@@ -28,8 +32,10 @@ func Watchdog(port int, timeout time.Duration, exePath string, args []string) {
 		select {
 		case msg := <-wdChan:
 			fmt.Printf("Received message: \"%s\"\n", msg)
-			wdTimer.Stop()
-			wdTimer.Reset(timeout)
+			if msg == message {
+				wdTimer.Stop()
+				wdTimer.Reset(timeout)
+			}
 
 		case <-wdTimer.C:
 			// process did not respond in time, respawn
