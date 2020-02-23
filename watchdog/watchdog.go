@@ -6,7 +6,7 @@ import (
 	"os/exec"
 	"time"
 
-	"../lib/network/network/bcast"
+	"../network/bcast"
 )
 
 const startupTimeLimit time.Duration = 2 * time.Second
@@ -23,6 +23,7 @@ const startupTimeLimit time.Duration = 2 * time.Second
 // * Parameter args are arguments that should be passed to the executable.
 func Watchdog(port int, timeout time.Duration, message string, exePath string, args []string) {
 	wdChan := make(chan string)
+	bcast.InitLogger()
 	go bcast.Receiver(port, wdChan)
 
 	wdTimer := time.NewTimer(timeout)
