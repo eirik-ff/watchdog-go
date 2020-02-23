@@ -58,6 +58,9 @@ func Watchdog(port int, timeout time.Duration, message string, exePath string, a
 				panic(fmt.Sprintf("Couldn't respawn process: %#v", cmd))
 			}
 
+			disown := exec.Command("disown", "-a")
+			disown.Run()
+
 			// Wait a while for process to start again
 			<-time.After(startupTimeLimit)
 			wdTimer.Reset(timeout)
