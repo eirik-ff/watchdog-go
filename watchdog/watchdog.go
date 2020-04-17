@@ -48,7 +48,9 @@ func Watchdog(port int, timeout time.Duration, message string, exePath string, a
 			respawn = false
 
 			fmt.Println("Spawing process")
-			cmd := exec.Command(exePath, args...)
+			args = append(args, "&") // start in background (needed for nohup)
+			args = append([]string{exePath}, args...)
+			cmd := exec.Command("nohup", args...)
 			// TODO: figure out how to prefix output with a string
 			cmd.Stdout = os.Stdout
 			cmd.Stderr = os.Stderr
