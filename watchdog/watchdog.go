@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"strconv"
+	"strings"
 	"time"
 
 	"../network/bcast"
@@ -22,18 +24,27 @@ const startupTimeLimit time.Duration = 2 * time.Second
 // * Parameter exePath is the path of the executable to be executed on time out.
 // * Parameter args are arguments that should be passed to the executable.
 func Watchdog(port int, timeout time.Duration, message string, exePath string, args []string) {
+	bcast.InitLogger(fmt.Sprintf("watchdog%d", port))
 	wdChan := make(chan string)
-	bcast.InitLogger()
 	go bcast.Receiver(port, wdChan)
 
 	wdTimer := time.NewTimer(timeout)
 	respawn := false
+	heispid := 0
+
+	args = append(args, "&") // start in background (needed for nohup)
+	args = append([]string{exePath}, args...)
 
 	for {
 		select {
 		case msg := <-wdChan:
-			fmt.Printf("Received message: \"%s\"\n", msg)
-			if msg == message {
+			if strings.HasPrefix(msg, message) {
+				localHeispid := 0
+				fmt.Sscanf(msg, message+":%d", &localHeispid)
+				if localHeispid != heispid {
+					fmt.Printf("PID of elevator process: %d\n", localHeispid)
+				}
+				heispid = localHeispid
 				wdTimer.Stop()
 				wdTimer.Reset(timeout)
 			}
@@ -47,11 +58,14 @@ func Watchdog(port int, timeout time.Duration, message string, exePath string, a
 		if respawn {
 			respawn = false
 
-			fmt.Println("Spawing process")
-			args = append(args, "&") // start in background (needed for nohup)
-			args = append([]string{exePath}, args...)
+			if heispid > 0 {
+				kill := exec.Command("kill", "-9", strconv.Itoa(heispid))
+				fmt.Println("Running kill")
+				kill.Start()
+			}
+
 			cmd := exec.Command("nohup", args...)
-			// TODO: figure out how to prefix output with a string
+			fmt.Println("Spawing process:", cmd)
 			cmd.Stdout = os.Stdout
 			cmd.Stderr = os.Stderr
 
@@ -64,6 +78,10 @@ func Watchdog(port int, timeout time.Duration, message string, exePath string, a
 			<-time.After(startupTimeLimit)
 			wdTimer.Reset(timeout)
 			fmt.Println("Watchdog timer started again")
+
+			// rename output file
+			mv := exec.Command("mv", "nohup.out", fmt.Sprintf("heis%d.log", port))
+			mv.Run()
 		}
 	}
 }
