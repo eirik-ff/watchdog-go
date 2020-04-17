@@ -33,8 +33,5 @@ func main() {
 	exePath := args[0]
 	args = args[1:]
 
-	go watchdog.Watchdog(*port, time.Duration(*timeout)*time.Millisecond, *message, exePath, args)
-
-	for {
-	}
+	watchdog.Watchdog(*port, time.Duration(*timeout)*time.Millisecond, *message, exePath, args)
 }
