@@ -10,7 +10,7 @@ logs/ :
 	mkdir $(LOGS_DIR)
 
 clean :
-	rm -rf $(PROJECT_NAME) 2> /dev/null
-	rm -rf $(LOGS_DIR) 2> /dev/null
-	rm -rf *.log 2> /dev/null
+	rm -rf $(PROJECT_NAME)
+	rm -rf $(LOGS_DIR)
+	rm -rf *.log
 
