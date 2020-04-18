@@ -80,7 +80,7 @@ func Watchdog(port int, timeout time.Duration, message string, exePath string, a
 			fmt.Println("Watchdog timer started again")
 
 			// rename output file
-			mv := exec.Command("mv", "nohup.out", fmt.Sprintf("heis%d.log", port))
+			mv := exec.Command("mv", "nohup.out", fmt.Sprintf("logs/heis%d.log", port))
 			mv.Run()
 		}
 	}
