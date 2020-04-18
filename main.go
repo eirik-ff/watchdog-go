@@ -11,7 +11,7 @@ import (
 
 const wdPortDefault int = 57005
 const wdTimeoutDefault = 5000 // 5 seconds
-const wdMessageDefault = "28-IAmAlive"
+const wdMessageDefault = "xx-IAmAlive"
 
 func main() {
 	cwd, _ := os.Getwd()
