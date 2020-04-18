@@ -2,7 +2,7 @@ package main
 
 import (
 	"flag"
-	"os/user"
+	"os"
 	"strings"
 	"time"
 
@@ -14,14 +14,13 @@ const wdTimeoutDefault = 5000 // 5 seconds
 const wdMessageDefault = "28-IAmAlive"
 
 func main() {
-	usr, _ := user.Current()
-	homeDir := usr.HomeDir
+	cwd, _ := os.Getwd()
 
 	port := flag.Int("port", wdPortDefault, "Port for communicating with the watchdog")
 	timeout := flag.Int("timeout", wdTimeoutDefault, "Timeout in milliseconds")
 	message := flag.String("message", wdMessageDefault,
 		"Message that needs to be received to be accepted as \"still alive\"")
-	exe := flag.String("exec", homeDir+"/sanntid-heis-gr28/heis",
+	exe := flag.String("exec", cwd+"/heis",
 		strings.Join([]string{
 			"Path of the executable that will be respawned. Supports arguments if ",
 			"placed in quotes ('single' or \"double\"). Use \"go build\" to create",
